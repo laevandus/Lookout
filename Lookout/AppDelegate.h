@@ -2,14 +2,16 @@
 //  AppDelegate.h
 //  Lookout
 //
-//  Created by Toomas Vahter on 22.04.12.
+//  Created by Toomas Vahter on 06.04.12.
 //  Copyright (c) 2012 Toomas Vahter. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
 
+@class MainWindowController;
+
 @interface AppDelegate : NSObject <NSApplicationDelegate>
-
-@property (assign) IBOutlet NSWindow *window;
-
+{
+	MainWindowController *mainWindowController;
+}
 @end
