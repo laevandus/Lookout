@@ -10,8 +10,11 @@
 
 @class MainWindowController;
 
-@interface AppDelegate : NSObject <NSApplicationDelegate>
+@interface AppDelegate : NSObject <NSApplicationDelegate, NSMenuDelegate>
 {
 	MainWindowController *mainWindowController;
 }
+
+@property (weak) IBOutlet NSMenu *cameraMenu;
+
 @end

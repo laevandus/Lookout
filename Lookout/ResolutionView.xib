@@ -171,15 +171,15 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: values.MaximumVideoWidth</string>
+						<string key="label">value: values.PreferredVideoWidth</string>
 						<reference key="source" ref="290329623"/>
 						<reference key="destination" ref="902794724"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="290329623"/>
 							<reference key="NSDestination" ref="902794724"/>
-							<string key="NSLabel">value: values.MaximumVideoWidth</string>
+							<string key="NSLabel">value: values.PreferredVideoWidth</string>
 							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">values.MaximumVideoWidth</string>
+							<string key="NSKeyPath">values.PreferredVideoWidth</string>
 							<dictionary key="NSOptions">
 								<boolean value="NO" key="NSConditionallySetsEditable"/>
 								<boolean value="YES" key="NSValidatesImmediately"/>
@@ -188,19 +188,19 @@
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">171</int>
+					<int key="connectionID">177</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: values.MaximumVideoHeight</string>
+						<string key="label">value: values.PreferredVideoHeight</string>
 						<reference key="source" ref="728952722"/>
 						<reference key="destination" ref="902794724"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="728952722"/>
 							<reference key="NSDestination" ref="902794724"/>
-							<string key="NSLabel">value: values.MaximumVideoHeight</string>
+							<string key="NSLabel">value: values.PreferredVideoHeight</string>
 							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">values.MaximumVideoHeight</string>
+							<string key="NSKeyPath">values.PreferredVideoHeight</string>
 							<dictionary key="NSOptions">
 								<boolean value="NO" key="NSConditionallySetsEditable"/>
 								<boolean value="YES" key="NSValidatesImmediately"/>
@@ -209,7 +209,7 @@
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">172</int>
+					<int key="connectionID">178</int>
 				</object>
 			</array>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -504,7 +504,7 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">176</int>
+			<int key="maxID">178</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">

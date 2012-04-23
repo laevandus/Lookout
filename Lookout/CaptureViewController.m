@@ -102,12 +102,12 @@
 	 David Underwood (QuickTime Engineering):
 	 "The short answer is that there is currently no API in QTKit for directly configuring the camera. As others have noted, QTKit will automatically adjust the camera resolution to best accommodate the requirements of all of the outputs connected to a session. For example setting the compression options of a movie file output or the pixel buffer attributes of a decompressed video output can cause the camera resolution to be adjusted for optimal performance. In general, if you are interested in configuring the camera because you want your output video to be at a specific resolution it makes more sense to configure your outputs directly and not worry about the camera settings, which is the functionality currently provided by QTKit. If you want access to the camera controls for other reasons, we don't currently provide a solution in QTKit (we are taking enhancement requests that have been filed under consideration, however)."
 	 */
-	NSNumber *maximumHeight = [[NSUserDefaults standardUserDefaults] objectForKey:@"MaximumVideoHeight"];
-	NSNumber *maximumWidth = [[NSUserDefaults standardUserDefaults] objectForKey:@"MaximumVideoWidth"];
+	NSNumber *preferredHeight = [[NSUserDefaults standardUserDefaults] objectForKey:kLookoutPreferredVideoHeight];
+	NSNumber *preferredWidth = [[NSUserDefaults standardUserDefaults] objectForKey:kLookoutPreferredVideoWidth];
 	
 	for (QTCaptureVideoPreviewOutput *output in [session outputs]) 
 	{
-		NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:maximumWidth, (id)kCVPixelBufferWidthKey, maximumHeight, (id)kCVPixelBufferHeightKey, nil];
+		NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:preferredWidth, (id)kCVPixelBufferWidthKey, preferredHeight, (id)kCVPixelBufferHeightKey, nil];
 		[output setPixelBufferAttributes:attributes];
 	}
 }
@@ -117,13 +117,15 @@
 #pragma mark KVO
 
 static void *VideoResolutionContext = "VideoResolutionContext";
+static void *DeviceContext = "DeviceContext";
 
 - (void)_startObservingUserDefaults
 {
 	if (!isObservingUserDefaults) 
 	{
-		[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.MaximumVideoHeight" options:0 context:VideoResolutionContext];
-		[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.MaximumVideoWidth" options:0 context:VideoResolutionContext];
+		[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.PreferredVideoHeight" options:0 context:VideoResolutionContext];
+		[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.PreferredVideoWidth" options:0 context:VideoResolutionContext];
+		[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.DisabledDeviceIDs" options:0 context:DeviceContext];
 		
 		isObservingUserDefaults = YES;
 	}
@@ -134,8 +136,9 @@ static void *VideoResolutionContext = "VideoResolutionContext";
 {
 	if (isObservingUserDefaults) 
 	{
-		[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.MaximumVideoHeight"];
-		[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.MaximumVideoWidth"];
+		[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.PreferredVideoHeight"];
+		[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.PreferredVideoWidth"];
+		[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.DisabledDeviceIDs"];
 		
 		isObservingUserDefaults = NO;
 	}
@@ -154,6 +157,17 @@ static void *VideoResolutionContext = "VideoResolutionContext";
 			}
 		}
     } 
+	else if (context == DeviceContext)
+	{
+		if ([object isKindOfClass:[NSUserDefaultsController class]]) 
+		{
+			if (self.isCapturing) 
+			{
+				[self stopCapturing];
+				[self startCapturing];
+			}
+		}
+	}
 	else 
 	{
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
@@ -168,32 +182,37 @@ static void *VideoResolutionContext = "VideoResolutionContext";
 {			
 	self.capturing = YES;
 	
+	NSArray *disabledDevices = [[NSUserDefaults standardUserDefaults] objectForKey:kLookoutDisabledDeviceIDs];
+	
 	for (QTCaptureDevice *captureDevice in [QTCaptureDevice inputDevicesWithMediaType:QTMediaTypeVideo]) 
-	{		
+	{
 		NSError *error = nil;
 		
-		if ([captureDevice open:&error])
+		if (![disabledDevices containsObject:[captureDevice uniqueID]]) 
 		{
-			QTCaptureDeviceInput *deviceInput = [[QTCaptureDeviceInput alloc] initWithDevice:captureDevice];
-			QTCaptureSession *captureSession = [[QTCaptureSession alloc] init];
-			
-			if ([captureSession addInput:deviceInput error:&error])
+			if ([captureDevice open:&error])
 			{
-				QTCaptureLayer *sublayer = [QTCaptureLayer layerWithSession:captureSession];
+				QTCaptureDeviceInput *deviceInput = [[QTCaptureDeviceInput alloc] initWithDevice:captureDevice];
+				QTCaptureSession *captureSession = [[QTCaptureSession alloc] init];
 				
-				CGColorRef color = CGColorCreateGenericGray(0.8, 1.0);
-				sublayer.backgroundColor = color;
-				CGColorRelease(color);
-				
-				[[self.view layer] addSublayer:sublayer];
-				
-				[captureSession startRunning];
-				
-				[self _updatePixelBufferAttributesForSession:captureSession];
-			}
-			else 
-			{
-				NSLog(@"%s Failed adding input device to session (device = %@, session = %@) with error (%@)", __func__, [captureDevice localizedDisplayName], captureSession, [error localizedDescription]);
+				if ([captureSession addInput:deviceInput error:&error])
+				{
+					QTCaptureLayer *sublayer = [QTCaptureLayer layerWithSession:captureSession];
+					
+					CGColorRef color = CGColorCreateGenericGray(0.8, 1.0);
+					sublayer.backgroundColor = color;
+					CGColorRelease(color);
+					
+					[[self.view layer] addSublayer:sublayer];
+					
+					[captureSession startRunning];
+					
+					[self _updatePixelBufferAttributesForSession:captureSession];
+				}
+				else 
+				{
+					NSLog(@"%s Failed adding input device to session (device = %@, session = %@) with error (%@)", __func__, [captureDevice localizedDisplayName], captureSession, [error localizedDescription]);
+				}
 			}
 		}
 		else 
@@ -224,3 +243,10 @@ static void *VideoResolutionContext = "VideoResolutionContext";
 }
 
 @end
+
+// UserDefaults
+
+const NSString *kLookoutDisabledDeviceIDs = @"DisabledDeviceIDs";
+const NSString *kLookoutPreferredVideoHeight = @"PreferredVideoHeight";
+const NSString *kLookoutPreferredVideoWidth = @"PreferredVideoWidth";
+
