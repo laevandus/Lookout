@@ -16,9 +16,6 @@
 	NSPopover *resolutionPopover;
 	
 	CaptureViewController *contentViewController;
-	
-	QTCaptureSession *captureSession;
-	QTCaptureDeviceInput *deviceInput;
 }
 
 @property (weak) IBOutlet id toggleButton;

@@ -67,4 +67,24 @@
 		[resolutionPopover showRelativeToRect:NSZeroRect ofView:sender preferredEdge:NSMinXEdge];
 }
 
+
+- (void)toggleCameraState:(NSMenuItem *)menuitem
+{
+	NSString *uniqueID = [menuitem representedObject];
+	NSMutableArray *disabledDevices = [NSMutableArray arrayWithArray:[[NSUserDefaults standardUserDefaults] objectForKey:kLookoutDisabledDeviceIDs]];
+	
+	if ([disabledDevices containsObject:uniqueID]) 
+	{
+		// Enable
+		[disabledDevices removeObject:uniqueID];
+	}
+	else 
+	{
+		// Disable
+		[disabledDevices addObject:uniqueID];
+	}
+	
+	[[NSUserDefaults standardUserDefaults] setObject:disabledDevices forKey:kLookoutDisabledDeviceIDs];
+}
+
 @end
