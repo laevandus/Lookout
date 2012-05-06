@@ -121,12 +121,17 @@
 	 David Underwood (QuickTime Engineering):
 	 "The short answer is that there is currently no API in QTKit for directly configuring the camera. As others have noted, QTKit will automatically adjust the camera resolution to best accommodate the requirements of all of the outputs connected to a session. For example setting the compression options of a movie file output or the pixel buffer attributes of a decompressed video output can cause the camera resolution to be adjusted for optimal performance. In general, if you are interested in configuring the camera because you want your output video to be at a specific resolution it makes more sense to configure your outputs directly and not worry about the camera settings, which is the functionality currently provided by QTKit. If you want access to the camera controls for other reasons, we don't currently provide a solution in QTKit (we are taking enhancement requests that have been filed under consideration, however)."
 	 */
-	NSNumber *preferredHeight = [[NSUserDefaults standardUserDefaults] objectForKey:kLookoutPreferredVideoHeight];
-	NSNumber *preferredWidth = [[NSUserDefaults standardUserDefaults] objectForKey:kLookoutPreferredVideoWidth];
+	NSDictionary *attributes = nil;
+	
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:kLookoutUsePreferredVideoSize]) 
+	{
+		NSNumber *preferredHeight = [[NSUserDefaults standardUserDefaults] objectForKey:kLookoutPreferredVideoHeight];
+		NSNumber *preferredWidth = [[NSUserDefaults standardUserDefaults] objectForKey:kLookoutPreferredVideoWidth];
+		attributes = [NSDictionary dictionaryWithObjectsAndKeys:preferredWidth, (id)kCVPixelBufferWidthKey, preferredHeight, (id)kCVPixelBufferHeightKey, nil];
+	}
 	
 	for (QTCaptureVideoPreviewOutput *output in [session outputs]) 
 	{
-		NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:preferredWidth, (id)kCVPixelBufferWidthKey, preferredHeight, (id)kCVPixelBufferHeightKey, nil];
 		[output setPixelBufferAttributes:attributes];
 	}
 }
@@ -144,6 +149,7 @@ static void *DeviceContext = "DeviceContext";
 	{
 		[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.PreferredVideoHeight" options:0 context:VideoResolutionContext];
 		[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.PreferredVideoWidth" options:0 context:VideoResolutionContext];
+		[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.UsePreferredVideoSize" options:0 context:VideoResolutionContext];
 		[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.DisabledDeviceIDs" options:0 context:DeviceContext];
 		
 		isObservingUserDefaults = YES;
@@ -157,6 +163,7 @@ static void *DeviceContext = "DeviceContext";
 	{
 		[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.PreferredVideoHeight"];
 		[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.PreferredVideoWidth"];
+		[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.UsePreferredVideoSize"];
 		[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.DisabledDeviceIDs"];
 		
 		isObservingUserDefaults = NO;
@@ -268,4 +275,5 @@ static void *DeviceContext = "DeviceContext";
 const NSString *kLookoutDisabledDeviceIDs = @"DisabledDeviceIDs";
 const NSString *kLookoutPreferredVideoHeight = @"PreferredVideoHeight";
 const NSString *kLookoutPreferredVideoWidth = @"PreferredVideoWidth";
+const NSString *kLookoutUsePreferredVideoSize = @"UsePreferredVideoSize";
 

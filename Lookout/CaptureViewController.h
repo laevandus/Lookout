@@ -44,3 +44,4 @@
 extern NSString *kLookoutDisabledDeviceIDs;
 extern NSString *kLookoutPreferredVideoHeight;
 extern NSString *kLookoutPreferredVideoWidth;
+extern NSString *kLookoutUsePreferredVideoSize;

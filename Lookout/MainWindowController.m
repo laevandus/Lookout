@@ -78,7 +78,7 @@
 		resolutionPopover = [[NSPopover alloc] init];
 		resolutionPopover.behavior = NSPopoverBehaviorSemitransient;
 		[resolutionPopover setContentViewController:[[NSViewController alloc] initWithNibName:@"ResolutionView" bundle:nil]];
-		[resolutionPopover setContentSize:NSMakeSize(327.0, 62.0)];
+		[resolutionPopover setContentSize:NSMakeSize(327.0, 88.0)];
 	}
 	
 	if (![resolutionPopover isShown]) 
